@@ -1,1 +1,2 @@
 /model/*
+!/model/download_llm.py
