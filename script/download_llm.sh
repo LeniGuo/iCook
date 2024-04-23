@@ -5,7 +5,8 @@ apt install git-lfs
 apt update
 git lfs install
 
-# Change directory to /model
+# Change directory to /model/zhanghuiATchina
+mkdir -p model
 cd model
 mkdir zhanghuiATchina
 cd zhanghuiATchina

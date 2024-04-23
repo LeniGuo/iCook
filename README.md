@@ -38,6 +38,6 @@ conda activate iCook
 ### 下载微调后的LLM
 在```iCook/```目录下运行
 ```
-script/download_pretrained_llm.sh
+python model/download_llm.py
 ```
 
