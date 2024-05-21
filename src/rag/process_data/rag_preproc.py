@@ -5,6 +5,7 @@ Data preprocessing for RAG
 # https://github.com/luisdrita/HyperFoods/tree/master/data/recipe1M%2B
 # https://github.com/ritvikmath/nlp-recipe-project/tree/master/Data%20Cleaning
 
+import gdown #用于下载 Google Drive 上的文件
 import json
 import pandas as pd
 import re
@@ -17,14 +18,22 @@ import os
 # 下载和加载必要的 NLTK 数据
 nltk.download('stopwords')
 
-# 定义文件路径
+
+# 1. 下载和加载数据：从 Google Drive 下载 Recipe1M+ 数据集，并加载为 JSON 格式。
+# Google Drive 文件链接和目标路径
 base_dir = 'src/rag/process_data/data/recipe1M+'
+layer1_url = 'https://drive.google.com/file/d/1mMive0Ym5zIj59ARfZfL2VHdBB7TwZh7/view?usp=drive_link'
 layer1_path = os.path.join(base_dir, 'layer1.json')
+
+# 使用 gdown 下载文件
+gdown.download(layer1_url, layer1_path, quiet=False)
 
 # 加载 Recipe1M+ 数据集
 with open(layer1_path) as f:
     data = json.load(f)
 
+
+#2. 解析和整合数据：将食谱的原料、步骤和其他信息合并为单行文本。
 # 解析和转换数据
 ingredients = pd.json_normalize(data, record_path='ingredients', meta='id')
 instructions = pd.json_normalize(data, record_path='instructions', meta='id')
@@ -42,6 +51,8 @@ joined = joined.rename(columns={'url': 'url', 'title': 'title', 'id': 'id', 'tex
 # 合并标题、步骤和原料
 joined["combined"] = joined["title"] + " --|||-- " + joined["instructions"] + " --|||-- " + joined["ingredients"]
 
+
+# 3. 文本清洗与标准化：进行词汇替换、词干提取和去除停用词，以提高数据的一致性和质量。
 # 字符串标准化
 clean_words = {"c": "cup", "cups": "cup", "tablespoon": "tbsp", "tablespoons": "tbsp", "tbsps": "tbsp", "teaspoon": "tsp",
                "teaspoons": "tsp", "tsps": "tsp", "hours": "hour", "hr": "hour", "hrs": "hour", "minutes":"minute",
@@ -66,9 +77,12 @@ preprocessed_data_path = os.path.join(base_dir, 'preprocessed_recipe_data.pkl')
 with open(preprocessed_data_path, 'wb') as f:
     pickle.dump(joined, f)
 
+# 4. 创建索引：构建一个以食谱ID为键、合并文本为值的索引，便于后续的快速检索。
 # 创建索引
 index = {row['id']: row['combined'] for _, row in joined.iterrows()}
 
+
+# 5. 数据保存：将预处理后的数据和索引保存为 pickle 文件，方便后续使用。
 # 保存索引
 recipe_index_path = os.path.join(base_dir, 'recipe_index.pkl')
 with open(recipe_index_path, 'wb') as f:
