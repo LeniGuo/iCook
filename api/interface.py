@@ -4,9 +4,9 @@ import hashlib
 from fastapi import FastAPI, HTTPException, Form
 from uuid import uuid4
 from fastapi import File, UploadFile
-from src.recog_image.interface import recog_image
-from src.gen_resp.interface import gen_response
-import uvicorn
+#from src.recog_image.interface import recog_image
+#from src.gen_resp.interface import gen_response
+
 
 app = FastAPI()
 
@@ -37,7 +37,7 @@ async def register(username: str = Form(...), email: str = Form(...), password: 
         "username": username,
         "email": email,
         "hashedPassword": hash_password(password),
-        "avatar": avatar_path,
+        "avatar": "",
         "qa": [],
         "recipe": [],
         "sharedRecipe": []
@@ -46,7 +46,7 @@ async def register(username: str = Form(...), email: str = Form(...), password: 
     with open(f"public/user/{user_id}.json", 'w') as f:
         json.dump(user_data, f)
     
-    return {"user_id": user_id, "message": "User registered successfully"}
+    return {"user_id": user_id, "message": "User registered successfully", "statusCode": 200}
 
 # 用户登录
 @app.post("/login/")
@@ -55,9 +55,9 @@ async def login(email: str = Form(...), password: str = Form(...)):
         with open(f"public/user/{filename}", 'r') as f:
             user_data = json.load(f)
             if user_data["email"] == email and user_data["hashedPassword"] == hash_password(password):
-                return {"user_id": filename.split('.')[0], "message": "Login successful"}
+                return {"user_id": filename.split('.')[0], "message": "Login successful", "statusCode": 200}
     raise HTTPException(status_code=401, detail="Invalid email or password")
-
+''''
 # 用户输入文字和上传图片后生成回答
 @app.post("/submit-query/")
 async def submit_query(user_id: str = Form(...), query: str = Form(...), file: UploadFile = File(None)):
@@ -308,7 +308,9 @@ async def mark_step_completed(recipe_id: str, step_index: int):
         json.dump(recipe_data, f)
     
     return {"message": "Successfully reversed"}
+'''
 
 if __name__ == "__main__":
+    import uvicorn
     # 在iCook目录下运行 python api/interface.py 启动接口
-    uvicorn.run("main:app", host="127.0.0.1", port=8080, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True)
